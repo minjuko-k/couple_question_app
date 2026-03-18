@@ -166,12 +166,6 @@
       word-break: keep-all;
     }
 
-    .meta {
-      font-size: 12px;
-      color: #999;
-      margin-top: 6px;
-    }
-
     .delete-btn {
       background: #f4f4f4;
       color: #555;
@@ -216,7 +210,7 @@
 <body>
   <div class="wrap">
     <h1>우리 질문 뽑기</h1>
-    <p class="sub">둘 중 누구든 질문을 추가하면 같이 보이는 버전 💗</p>
+    <p class="sub">둘이 같이 질문 추가하고 랜덤으로 뽑아보는 버전 💗</p>
 
     <div class="category" id="category">카테고리: 전체</div>
     <div class="card" id="questionBox">버튼을 눌러 질문을 뽑아봐 💬</div>
@@ -233,12 +227,6 @@
     <div class="section" id="addSection" style="display:none;">
       <h2>질문 추가하기</h2>
 
-      <label for="nicknameInput">이름</label>
-      <select id="nicknameInput">
-        <option value="민주">민주</option>
-        <option value="남자친구">남자친구</option>
-      </select>
-
       <label for="categorySelect">카테고리</label>
       <select id="categorySelect">
         <option value="love">연애 질문</option>
@@ -248,7 +236,7 @@
 
       <label for="questionInput">질문 내용</label>
       <textarea id="questionInput" placeholder="예) 다음 여행 가면 바다 vs 산?"></textarea>
-      <div class="small">추가하면 같은 링크를 쓰는 두 사람 화면에 같이 뜨게 돼.</div>
+      <div class="small">추가하면 같은 링크에서 같이 보이게 돼.</div>
 
       <button class="primary" onclick="addQuestion()">추가하기</button>
     </div>
@@ -299,17 +287,17 @@
     };
 
     const DEFAULT_QUESTIONS = [
-      { author: "민주", category: "love", text: "내가 했을 때 제일 좋았던 말이나 행동은?" },
-      { author: "민주", category: "love", text: "처음보다 더 좋아진 점 하나 말해보기" },
-      { author: "민주", category: "love", text: "요즘 나한테 바라는 점 하나는?" },
+      { category: "love", text: "내가 했을 때 제일 좋았던 말이나 행동은?" },
+      { category: "love", text: "처음보다 더 좋아진 점 하나 말해보기" },
+      { category: "love", text: "요즘 나한테 바라는 점 하나는?" },
 
-      { author: "민주", category: "balance", text: "집데이트 vs 밖데이트" },
-      { author: "민주", category: "balance", text: "바다 여행 vs 산 여행" },
-      { author: "민주", category: "balance", text: "전화 오래 하기 vs 카톡 자주 하기" },
+      { category: "balance", text: "집데이트 vs 밖데이트" },
+      { category: "balance", text: "바다 여행 vs 산 여행" },
+      { category: "balance", text: "전화 오래 하기 vs 카톡 자주 하기" },
 
-      { author: "민주", category: "fun", text: "내 별명 하나 새로 지어준다면?" },
-      { author: "민주", category: "fun", text: "나를 동물에 비유하면 뭐야?" },
-      { author: "민주", category: "fun", text: "같이 먹고 싶은 야식 하나만 고르면?" }
+      { category: "fun", text: "내 별명 하나 새로 지어준다면?" },
+      { category: "fun", text: "나를 동물에 비유하면 뭐야?" },
+      { category: "fun", text: "같이 먹고 싶은 야식 하나만 고르면?" }
     ];
 
     const app = initializeApp(firebaseConfig);
@@ -318,7 +306,6 @@
 
     let allQuestions = [];
     let currentManageFilter = "all";
-    let unsubscribe = null;
 
     function getCategoryLabel(type) {
       if (type === "love") return "연애 질문";
@@ -344,7 +331,6 @@
 
       for (const item of DEFAULT_QUESTIONS) {
         await addDoc(questionsRef, {
-          author: item.author,
           category: item.category,
           text: item.text,
           createdAt: serverTimestamp()
@@ -400,7 +386,6 @@
     };
 
     window.addQuestion = async function() {
-      const nickname = document.getElementById("nicknameInput").value;
       const category = document.getElementById("categorySelect").value;
       const input = document.getElementById("questionInput");
       const text = input.value.trim();
@@ -412,7 +397,6 @@
 
       try {
         await addDoc(questionsRef, {
-          author: nickname,
           category,
           text,
           createdAt: serverTimestamp()
@@ -450,7 +434,6 @@
         text.innerHTML = `
           <strong>[${getCategoryLabel(item.category)}]</strong><br>
           ${escapeHtml(item.text)}
-          <div class="meta">작성: ${escapeHtml(item.author || "작성자 미상")}</div>
         `;
 
         const del = document.createElement("button");
@@ -481,7 +464,7 @@
 
       const q = query(questionsRef, orderBy("createdAt", "desc"));
 
-      unsubscribe = onSnapshot(q, async (snapshot) => {
+      onSnapshot(q, async (snapshot) => {
         try {
           await addDefaultQuestionsIfEmpty(snapshot);
         } catch (error) {
@@ -494,12 +477,6 @@
         }));
 
         renderQuestions(currentManageFilter);
-
-        if (allQuestions.length > 0) {
-          document.getElementById("questionBox").textContent = "버튼을 눌러 질문을 뽑아봐 💬";
-          document.getElementById("category").textContent = "카테고리: 전체";
-        }
-
         updateLoadingText("");
       }, (error) => {
         console.error(error);
