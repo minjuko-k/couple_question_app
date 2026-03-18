@@ -39,7 +39,7 @@
       background: #fff;
       border-radius: 20px;
       padding: 24px 18px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
       margin-bottom: 16px;
       min-height: 140px;
       display: flex;
@@ -92,7 +92,7 @@
     .section {
       background: #fff;
       border-radius: 20px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
       padding: 16px;
       margin-top: 14px;
     }
@@ -166,6 +166,12 @@
       word-break: keep-all;
     }
 
+    .meta {
+      font-size: 12px;
+      color: #999;
+      margin-top: 6px;
+    }
+
     .delete-btn {
       background: #f4f4f4;
       color: #555;
@@ -198,12 +204,19 @@
       color: #888;
       line-height: 1.5;
     }
+
+    .loading {
+      text-align: center;
+      color: #888;
+      font-size: 14px;
+      margin-top: 8px;
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>우리 질문 뽑기</h1>
-    <p class="sub">질문도 뽑고, 생각날 때마다 직접 추가해두는 버전 💗</p>
+    <p class="sub">둘 중 누구든 질문을 추가하면 같이 보이는 버전 💗</p>
 
     <div class="category" id="category">카테고리: 전체</div>
     <div class="card" id="questionBox">버튼을 눌러 질문을 뽑아봐 💬</div>
@@ -220,6 +233,12 @@
     <div class="section" id="addSection" style="display:none;">
       <h2>질문 추가하기</h2>
 
+      <label for="nicknameInput">이름</label>
+      <select id="nicknameInput">
+        <option value="민주">민주</option>
+        <option value="남자친구">남자친구</option>
+      </select>
+
       <label for="categorySelect">카테고리</label>
       <select id="categorySelect">
         <option value="love">연애 질문</option>
@@ -229,7 +248,7 @@
 
       <label for="questionInput">질문 내용</label>
       <textarea id="questionInput" placeholder="예) 다음 여행 가면 바다 vs 산?"></textarea>
-      <div class="small">한 줄 질문도 되고, 길게 적어도 돼.</div>
+      <div class="small">추가하면 같은 링크를 쓰는 두 사람 화면에 같이 뜨게 돼.</div>
 
       <button class="primary" onclick="addQuestion()">추가하기</button>
     </div>
@@ -244,77 +263,62 @@
         <button class="pill" onclick="renderQuestions('fun')">장난 질문</button>
       </div>
 
-      <div class="stats" id="statsText"></div>
+      <div class="stats" id="statsText">불러오는 중...</div>
       <div class="list" id="questionList"></div>
 
       <div class="notice">
-        이 버전은 이 기기의 브라우저에 저장돼.  
-        즉, 내 폰에서 추가한 질문은 내 폰에 저장되고, 다른 폰과 자동 공유되지는 않아.
+        지금은 Firestore 테스트 모드 기준으로 쓰는 버전이야.  
+        나중에는 보안 규칙을 따로 손보는 게 좋아.
       </div>
     </div>
+
+    <div class="loading" id="loadingText">Firebase 연결 중...</div>
   </div>
 
-  <script>
-    const DEFAULT_QUESTIONS = {
-      love: [
-        "내가 했을 때 제일 좋았던 말이나 행동은?",
-        "처음보다 더 좋아진 점 하나 말해보기",
-        "요즘 나한테 바라는 점 하나는?",
-        "같이 있어서 가장 편한 순간은 언제야?",
-        "내가 귀엽다고 느껴졌던 순간은?"
-      ],
-      balance: [
-        "집데이트 vs 밖데이트",
-        "바다 여행 vs 산 여행",
-        "하루 종일 붙어있기 vs 자주 짧게 보기",
-        "전화 오래 하기 vs 카톡 자주 하기",
-        "야식 먹기 vs 디저트 먹기"
-      ],
-      fun: [
-        "내 별명 하나 새로 지어준다면?",
-        "나를 동물에 비유하면 뭐야?",
-        "우리 커플 테마곡 정하면 뭐가 어울릴까?",
-        "같이 먹고 싶은 야식 하나만 고르면?",
-        "내가 제일 자주 할 것 같은 말은?"
-      ]
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      deleteDoc,
+      doc,
+      onSnapshot,
+      query,
+      orderBy,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD8jZ9kTlGd2OzFswmAzLt8zpec9kMHHV4",
+      authDomain: "couple-question-app.firebaseapp.com",
+      projectId: "couple-question-app",
+      storageBucket: "couple-question-app.firebasestorage.app",
+      messagingSenderId: "455058967733",
+      appId: "1:455058967733:web:c3d138b1a695c1c4af02fc"
     };
 
-    const STORAGE_KEY = "our_couple_questions_v1";
+    const DEFAULT_QUESTIONS = [
+      { author: "민주", category: "love", text: "내가 했을 때 제일 좋았던 말이나 행동은?" },
+      { author: "민주", category: "love", text: "처음보다 더 좋아진 점 하나 말해보기" },
+      { author: "민주", category: "love", text: "요즘 나한테 바라는 점 하나는?" },
+
+      { author: "민주", category: "balance", text: "집데이트 vs 밖데이트" },
+      { author: "민주", category: "balance", text: "바다 여행 vs 산 여행" },
+      { author: "민주", category: "balance", text: "전화 오래 하기 vs 카톡 자주 하기" },
+
+      { author: "민주", category: "fun", text: "내 별명 하나 새로 지어준다면?" },
+      { author: "민주", category: "fun", text: "나를 동물에 비유하면 뭐야?" },
+      { author: "민주", category: "fun", text: "같이 먹고 싶은 야식 하나만 고르면?" }
+    ];
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const questionsRef = collection(db, "questions");
+
+    let allQuestions = [];
     let currentManageFilter = "all";
-
-    function deepCopy(obj) {
-      return JSON.parse(JSON.stringify(obj));
-    }
-
-    function loadQuestions() {
-      const saved = localStorage.getItem(STORAGE_KEY);
-
-      if (!saved) {
-        const initial = deepCopy(DEFAULT_QUESTIONS);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
-        return initial;
-      }
-
-      try {
-        const parsed = JSON.parse(saved);
-
-        return {
-          love: Array.isArray(parsed.love) ? parsed.love : [...DEFAULT_QUESTIONS.love],
-          balance: Array.isArray(parsed.balance) ? parsed.balance : [...DEFAULT_QUESTIONS.balance],
-          fun: Array.isArray(parsed.fun) ? parsed.fun : [...DEFAULT_QUESTIONS.fun]
-        };
-      } catch (e) {
-        const fallback = deepCopy(DEFAULT_QUESTIONS);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(fallback));
-        return fallback;
-      }
-    }
-
-    function saveQuestions(data) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    }
-
-    let questions = loadQuestions();
+    let unsubscribe = null;
 
     function getCategoryLabel(type) {
       if (type === "love") return "연애 질문";
@@ -323,59 +327,65 @@
       return "전체";
     }
 
-    function drawQuestion(type) {
-      let list = [];
-      let label = getCategoryLabel(type);
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text || "";
+      return div.innerHTML;
+    }
 
-      if (type === "love" || type === "balance" || type === "fun") {
-        list = questions[type];
+    function updateLoadingText(message = "") {
+      const el = document.getElementById("loadingText");
+      el.textContent = message;
+      el.style.display = message ? "block" : "none";
+    }
+
+    async function addDefaultQuestionsIfEmpty(snapshot) {
+      if (!snapshot.empty) return;
+
+      for (const item of DEFAULT_QUESTIONS) {
+        await addDoc(questionsRef, {
+          author: item.author,
+          category: item.category,
+          text: item.text,
+          createdAt: serverTimestamp()
+        });
+      }
+    }
+
+    function getFilteredQuestions(filter) {
+      if (filter === "all") return allQuestions;
+      return allQuestions.filter(item => item.category === filter);
+    }
+
+    window.drawQuestion = function(type) {
+      let list = [];
+
+      if (type === "all") {
+        list = [...allQuestions];
       } else {
-        list = [...questions.love, ...questions.balance, ...questions.fun];
+        list = allQuestions.filter(item => item.category === type);
       }
 
       if (!list.length) {
         document.getElementById("questionBox").textContent = "아직 질문이 없어. 먼저 하나 추가해봐 💡";
-        document.getElementById("category").textContent = `카테고리: ${label}`;
+        document.getElementById("category").textContent = `카테고리: ${getCategoryLabel(type)}`;
         return;
       }
 
       const randomIndex = Math.floor(Math.random() * list.length);
-      document.getElementById("questionBox").textContent = list[randomIndex];
-      document.getElementById("category").textContent = `카테고리: ${label}`;
-    }
+      document.getElementById("questionBox").textContent = list[randomIndex].text;
+      document.getElementById("category").textContent = `카테고리: ${getCategoryLabel(type)}`;
+    };
 
-    function addQuestion() {
-      const category = document.getElementById("categorySelect").value;
-      const input = document.getElementById("questionInput");
-      const text = input.value.trim();
-
-      if (!text) {
-        alert("질문 내용을 입력해줘!");
-        return;
-      }
-
-      questions[category].push(text);
-      saveQuestions(questions);
-
-      input.value = "";
-      alert("질문이 추가됐어 💗");
-      renderQuestions(currentManageFilter);
-    }
-
-    function toggleAddSection() {
+    window.toggleAddSection = function() {
       const addSection = document.getElementById("addSection");
       const manageSection = document.getElementById("manageSection");
 
-      if (addSection.style.display === "none") {
-        addSection.style.display = "block";
-      } else {
-        addSection.style.display = "none";
-      }
-
+      addSection.style.display = addSection.style.display === "none" ? "block" : "none";
       manageSection.style.display = "none";
-    }
+    };
 
-    function toggleManageSection() {
+    window.toggleManageSection = function() {
       const addSection = document.getElementById("addSection");
       const manageSection = document.getElementById("manageSection");
 
@@ -387,25 +397,36 @@
       }
 
       addSection.style.display = "none";
-    }
+    };
 
-    function getFilteredQuestions(filter) {
-      if (filter === "all") {
-        return [
-          ...questions.love.map((text, index) => ({ category: "love", text, index })),
-          ...questions.balance.map((text, index) => ({ category: "balance", text, index })),
-          ...questions.fun.map((text, index) => ({ category: "fun", text, index }))
-        ];
+    window.addQuestion = async function() {
+      const nickname = document.getElementById("nicknameInput").value;
+      const category = document.getElementById("categorySelect").value;
+      const input = document.getElementById("questionInput");
+      const text = input.value.trim();
+
+      if (!text) {
+        alert("질문 내용을 입력해줘!");
+        return;
       }
 
-      return questions[filter].map((text, index) => ({
-        category: filter,
-        text,
-        index
-      }));
-    }
+      try {
+        await addDoc(questionsRef, {
+          author: nickname,
+          category,
+          text,
+          createdAt: serverTimestamp()
+        });
 
-    function renderQuestions(filter = "all") {
+        input.value = "";
+        alert("질문이 추가됐어 💗");
+      } catch (error) {
+        console.error(error);
+        alert("질문 추가 중 오류가 났어.");
+      }
+    };
+
+    window.renderQuestions = function(filter = "all") {
       currentManageFilter = filter;
 
       const listEl = document.getElementById("questionList");
@@ -426,35 +447,67 @@
 
         const text = document.createElement("div");
         text.className = "item-text";
-        text.innerHTML = `<strong>[${getCategoryLabel(item.category)}]</strong><br>${escapeHtml(item.text)}`;
+        text.innerHTML = `
+          <strong>[${getCategoryLabel(item.category)}]</strong><br>
+          ${escapeHtml(item.text)}
+          <div class="meta">작성: ${escapeHtml(item.author || "작성자 미상")}</div>
+        `;
 
         const del = document.createElement("button");
         del.className = "delete-btn";
         del.textContent = "삭제";
-        del.onclick = () => deleteQuestion(item.category, item.index);
+        del.onclick = () => deleteQuestion(item.id);
 
         row.appendChild(text);
         row.appendChild(del);
         listEl.appendChild(row);
       });
-    }
+    };
 
-    function deleteQuestion(category, index) {
+    async function deleteQuestion(id) {
       const ok = confirm("이 질문 삭제할까?");
       if (!ok) return;
 
-      questions[category].splice(index, 1);
-      saveQuestions(questions);
-      renderQuestions(currentManageFilter);
+      try {
+        await deleteDoc(doc(db, "questions", id));
+      } catch (error) {
+        console.error(error);
+        alert("삭제 중 오류가 났어.");
+      }
     }
 
-    function escapeHtml(text) {
-      const div = document.createElement("div");
-      div.textContent = text;
-      return div.innerHTML;
+    function startRealtimeListener() {
+      updateLoadingText("Firebase 연결 중...");
+
+      const q = query(questionsRef, orderBy("createdAt", "desc"));
+
+      unsubscribe = onSnapshot(q, async (snapshot) => {
+        try {
+          await addDefaultQuestionsIfEmpty(snapshot);
+        } catch (error) {
+          console.error(error);
+        }
+
+        allQuestions = snapshot.docs.map((docItem) => ({
+          id: docItem.id,
+          ...docItem.data()
+        }));
+
+        renderQuestions(currentManageFilter);
+
+        if (allQuestions.length > 0) {
+          document.getElementById("questionBox").textContent = "버튼을 눌러 질문을 뽑아봐 💬";
+          document.getElementById("category").textContent = "카테고리: 전체";
+        }
+
+        updateLoadingText("");
+      }, (error) => {
+        console.error(error);
+        updateLoadingText("데이터를 불러오지 못했어. Firestore 설정을 확인해봐.");
+      });
     }
 
-    drawQuestion("all");
+    startRealtimeListener();
   </script>
 </body>
 </html>
