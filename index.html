@@ -14,91 +14,248 @@
     }
 
     .wrap {
-      max-width: 420px;
+      max-width: 430px;
       margin: 0 auto;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 24px;
+      padding: 20px 16px 40px;
       box-sizing: border-box;
     }
 
     h1 {
       text-align: center;
       font-size: 28px;
-      margin-bottom: 12px;
+      margin: 18px 0 10px;
     }
 
-    p.sub {
+    .sub {
       text-align: center;
       color: #666;
-      margin-top: 0;
-      margin-bottom: 28px;
+      font-size: 15px;
+      margin-bottom: 22px;
+      line-height: 1.5;
     }
 
     .card {
-      background: white;
+      background: #fff;
       border-radius: 20px;
-      padding: 24px;
+      padding: 24px 18px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-      margin-bottom: 20px;
-      min-height: 160px;
+      margin-bottom: 16px;
+      min-height: 140px;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
       font-size: 22px;
       line-height: 1.5;
+      word-break: keep-all;
+    }
+
+    .category {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: #888;
     }
 
     .buttons {
       display: grid;
-      gap: 12px;
+      gap: 10px;
+      margin-bottom: 18px;
     }
 
     button {
       border: none;
       border-radius: 16px;
-      padding: 16px;
-      font-size: 17px;
-      font-weight: 600;
-      background: #ff6fae;
-      color: white;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 700;
       cursor: pointer;
     }
 
-    button.secondary {
-      background: #ffd7e8;
+    .primary {
+      background: #ff6fae;
+      color: white;
+    }
+
+    .secondary {
+      background: #ffd8e8;
       color: #b03060;
     }
 
-    .category {
-      text-align: center;
-      margin-bottom: 12px;
+    .ghost {
+      background: #fff;
+      color: #444;
+      border: 1px solid #e5e5e5;
+    }
+
+    .section {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+      padding: 16px;
+      margin-top: 14px;
+    }
+
+    .section h2 {
+      font-size: 18px;
+      margin: 0 0 14px;
+    }
+
+    label {
+      display: block;
       font-size: 14px;
+      color: #555;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    select, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #ddd;
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 15px;
+      margin-bottom: 12px;
+      font-family: inherit;
+      background: white;
+    }
+
+    textarea {
+      min-height: 88px;
+      resize: vertical;
+    }
+
+    .small {
+      font-size: 13px;
       color: #888;
+      margin-top: -4px;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .stats {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .list {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .item {
+      border: 1px solid #eee;
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: flex-start;
+      background: #fffdfd;
+    }
+
+    .item-text {
+      font-size: 14px;
+      line-height: 1.5;
+      flex: 1;
+      white-space: pre-wrap;
+      word-break: keep-all;
+    }
+
+    .delete-btn {
+      background: #f4f4f4;
+      color: #555;
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      min-width: 56px;
+    }
+
+    .pill-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .pill {
+      border: 1px solid #eee;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #666;
+      background: #fff;
+    }
+
+    .notice {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #888;
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>우리 질문 뽑기</h1>
-    <p class="sub">오늘 뭐 얘기할지 모르겠을 때 꺼내보기</p>
+    <p class="sub">질문도 뽑고, 생각날 때마다 직접 추가해두는 버전 💗</p>
 
     <div class="category" id="category">카테고리: 전체</div>
-    <div class="card" id="questionBox">버튼을 눌러 질문을 뽑아봐 💗</div>
+    <div class="card" id="questionBox">버튼을 눌러 질문을 뽑아봐 💬</div>
 
     <div class="buttons">
-      <button onclick="drawQuestion('all')">전체 질문 뽑기</button>
+      <button class="primary" onclick="drawQuestion('all')">전체 질문 뽑기</button>
       <button class="secondary" onclick="drawQuestion('love')">연애 질문</button>
       <button class="secondary" onclick="drawQuestion('balance')">밸런스 게임</button>
       <button class="secondary" onclick="drawQuestion('fun')">장난 질문</button>
+      <button class="ghost" onclick="toggleAddSection()">질문 추가하기</button>
+      <button class="ghost" onclick="toggleManageSection()">질문 목록 보기</button>
+    </div>
+
+    <div class="section" id="addSection" style="display:none;">
+      <h2>질문 추가하기</h2>
+
+      <label for="categorySelect">카테고리</label>
+      <select id="categorySelect">
+        <option value="love">연애 질문</option>
+        <option value="balance">밸런스 게임</option>
+        <option value="fun">장난 질문</option>
+      </select>
+
+      <label for="questionInput">질문 내용</label>
+      <textarea id="questionInput" placeholder="예) 다음 여행 가면 바다 vs 산?"></textarea>
+      <div class="small">한 줄 질문도 되고, 길게 적어도 돼.</div>
+
+      <button class="primary" onclick="addQuestion()">추가하기</button>
+    </div>
+
+    <div class="section" id="manageSection" style="display:none;">
+      <h2>질문 목록</h2>
+
+      <div class="pill-row">
+        <button class="pill" onclick="renderQuestions('all')">전체</button>
+        <button class="pill" onclick="renderQuestions('love')">연애 질문</button>
+        <button class="pill" onclick="renderQuestions('balance')">밸런스 게임</button>
+        <button class="pill" onclick="renderQuestions('fun')">장난 질문</button>
+      </div>
+
+      <div class="stats" id="statsText"></div>
+      <div class="list" id="questionList"></div>
+
+      <div class="notice">
+        이 버전은 이 기기의 브라우저에 저장돼.  
+        즉, 내 폰에서 추가한 질문은 내 폰에 저장되고, 다른 폰과 자동 공유되지는 않아.
+      </div>
     </div>
   </div>
 
   <script>
-    const questions = {
+    const DEFAULT_QUESTIONS = {
       love: [
         "내가 했을 때 제일 좋았던 말이나 행동은?",
         "처음보다 더 좋아진 점 하나 말해보기",
@@ -122,27 +279,182 @@
       ]
     };
 
+    const STORAGE_KEY = "our_couple_questions_v1";
+    let currentManageFilter = "all";
+
+    function deepCopy(obj) {
+      return JSON.parse(JSON.stringify(obj));
+    }
+
+    function loadQuestions() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+
+      if (!saved) {
+        const initial = deepCopy(DEFAULT_QUESTIONS);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+        return initial;
+      }
+
+      try {
+        const parsed = JSON.parse(saved);
+
+        return {
+          love: Array.isArray(parsed.love) ? parsed.love : [...DEFAULT_QUESTIONS.love],
+          balance: Array.isArray(parsed.balance) ? parsed.balance : [...DEFAULT_QUESTIONS.balance],
+          fun: Array.isArray(parsed.fun) ? parsed.fun : [...DEFAULT_QUESTIONS.fun]
+        };
+      } catch (e) {
+        const fallback = deepCopy(DEFAULT_QUESTIONS);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(fallback));
+        return fallback;
+      }
+    }
+
+    function saveQuestions(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    let questions = loadQuestions();
+
+    function getCategoryLabel(type) {
+      if (type === "love") return "연애 질문";
+      if (type === "balance") return "밸런스 게임";
+      if (type === "fun") return "장난 질문";
+      return "전체";
+    }
+
     function drawQuestion(type) {
       let list = [];
-      let label = "전체";
+      let label = getCategoryLabel(type);
 
-      if (type === "love") {
-        list = questions.love;
-        label = "연애 질문";
-      } else if (type === "balance") {
-        list = questions.balance;
-        label = "밸런스 게임";
-      } else if (type === "fun") {
-        list = questions.fun;
-        label = "장난 질문";
+      if (type === "love" || type === "balance" || type === "fun") {
+        list = questions[type];
       } else {
         list = [...questions.love, ...questions.balance, ...questions.fun];
+      }
+
+      if (!list.length) {
+        document.getElementById("questionBox").textContent = "아직 질문이 없어. 먼저 하나 추가해봐 💡";
+        document.getElementById("category").textContent = `카테고리: ${label}`;
+        return;
       }
 
       const randomIndex = Math.floor(Math.random() * list.length);
       document.getElementById("questionBox").textContent = list[randomIndex];
       document.getElementById("category").textContent = `카테고리: ${label}`;
     }
+
+    function addQuestion() {
+      const category = document.getElementById("categorySelect").value;
+      const input = document.getElementById("questionInput");
+      const text = input.value.trim();
+
+      if (!text) {
+        alert("질문 내용을 입력해줘!");
+        return;
+      }
+
+      questions[category].push(text);
+      saveQuestions(questions);
+
+      input.value = "";
+      alert("질문이 추가됐어 💗");
+      renderQuestions(currentManageFilter);
+    }
+
+    function toggleAddSection() {
+      const addSection = document.getElementById("addSection");
+      const manageSection = document.getElementById("manageSection");
+
+      if (addSection.style.display === "none") {
+        addSection.style.display = "block";
+      } else {
+        addSection.style.display = "none";
+      }
+
+      manageSection.style.display = "none";
+    }
+
+    function toggleManageSection() {
+      const addSection = document.getElementById("addSection");
+      const manageSection = document.getElementById("manageSection");
+
+      if (manageSection.style.display === "none") {
+        manageSection.style.display = "block";
+        renderQuestions(currentManageFilter);
+      } else {
+        manageSection.style.display = "none";
+      }
+
+      addSection.style.display = "none";
+    }
+
+    function getFilteredQuestions(filter) {
+      if (filter === "all") {
+        return [
+          ...questions.love.map((text, index) => ({ category: "love", text, index })),
+          ...questions.balance.map((text, index) => ({ category: "balance", text, index })),
+          ...questions.fun.map((text, index) => ({ category: "fun", text, index }))
+        ];
+      }
+
+      return questions[filter].map((text, index) => ({
+        category: filter,
+        text,
+        index
+      }));
+    }
+
+    function renderQuestions(filter = "all") {
+      currentManageFilter = filter;
+
+      const listEl = document.getElementById("questionList");
+      const statsEl = document.getElementById("statsText");
+      const items = getFilteredQuestions(filter);
+
+      statsEl.textContent = `${getCategoryLabel(filter)} 질문 ${items.length}개`;
+      listEl.innerHTML = "";
+
+      if (!items.length) {
+        listEl.innerHTML = `<div class="item"><div class="item-text">아직 질문이 없어.</div></div>`;
+        return;
+      }
+
+      items.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "item";
+
+        const text = document.createElement("div");
+        text.className = "item-text";
+        text.innerHTML = `<strong>[${getCategoryLabel(item.category)}]</strong><br>${escapeHtml(item.text)}`;
+
+        const del = document.createElement("button");
+        del.className = "delete-btn";
+        del.textContent = "삭제";
+        del.onclick = () => deleteQuestion(item.category, item.index);
+
+        row.appendChild(text);
+        row.appendChild(del);
+        listEl.appendChild(row);
+      });
+    }
+
+    function deleteQuestion(category, index) {
+      const ok = confirm("이 질문 삭제할까?");
+      if (!ok) return;
+
+      questions[category].splice(index, 1);
+      saveQuestions(questions);
+      renderQuestions(currentManageFilter);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    drawQuestion("all");
   </script>
 </body>
 </html>
