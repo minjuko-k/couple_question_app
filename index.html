@@ -115,14 +115,6 @@
       resize: vertical;
     }
 
-    .small {
-      font-size: 13px;
-      color: #939ba5;
-      margin-top: -4px;
-      margin-bottom: 12px;
-      line-height: 1.4;
-    }
-
     .stats {
       font-size: 14px;
       color: #a7afb8;
@@ -234,7 +226,7 @@
   <div class="wrap">
     <h1>우리 질문 뽑기 🖤</h1>
 
-    <div class="card" id="questionBox">버튼을 눌러 질문을 뽑아봐</div>
+    <div class="card" id="questionBox"></div>
 
     <div class="buttons">
       <button class="primary" onclick="drawQuestion()">질문 뽑기</button>
@@ -247,7 +239,6 @@
 
       <label for="questionInput">질문 내용</label>
       <textarea id="questionInput" placeholder="예) 다음에 같이 가고 싶은 여행지는?"></textarea>
-      <div class="small"></div>
 
       <button class="primary" onclick="addQuestion()">추가하기</button>
     </div>
@@ -259,15 +250,16 @@
       <div class="list" id="questionList"></div>
 
       <div class="notice">
-        
+        익명 로그인 상태에서만 질문을 읽고 수정할 수 있어.
       </div>
     </div>
 
-    <div class="loading" id="loadingText">Firebase 연결 중...</div>
+    <div class="loading" id="loadingText">로그인 준비 중...</div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
     import {
       getFirestore,
       collection,
@@ -303,6 +295,7 @@
     ];
 
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
     const db = getFirestore(app);
     const questionsRef = collection(db, "questions");
 
@@ -333,7 +326,7 @@
 
     window.drawQuestion = function() {
       if (!allQuestions.length) {
-        document.getElementById("questionBox").textContent = "아직 질문이 없어. 먼저 하나 추가해봐.";
+        document.getElementById("questionBox").textContent = "";
         return;
       }
 
@@ -394,7 +387,7 @@
       listEl.innerHTML = "";
 
       if (!allQuestions.length) {
-        listEl.innerHTML = '<div class="item"><div class="item-text">아직 질문이 없어.</div></div>';
+        listEl.innerHTML = '<div class="item"><div class="item-text"></div></div>';
         return;
       }
 
@@ -464,8 +457,7 @@
 
     window.openEdit = function(id) {
       const box = document.getElementById(`edit-box-${id}`);
-      if (!box) return;
-      box.classList.add("active");
+      if (box) box.classList.add("active");
     };
 
     window.cancelEdit = function(id) {
@@ -495,7 +487,8 @@
 
       try {
         await updateDoc(doc(db, "questions", id), {
-          text: newText
+          text: newText,
+          createdAt: allQuestions.find(q => q.id === id)?.createdAt || null
         });
 
         const box = document.getElementById(`edit-box-${id}`);
@@ -523,7 +516,7 @@
     }
 
     function startRealtimeListener() {
-      updateLoadingText("Firebase 연결 중...");
+      updateLoadingText("데이터 불러오는 중...");
 
       const q = query(questionsRef, orderBy("createdAt", "desc"));
 
@@ -546,12 +539,30 @@
         },
         (error) => {
           console.error(error);
-          updateLoadingText("데이터를 불러오지 못했어. Firestore 설정을 확인해봐.");
+          updateLoadingText("데이터를 불러오지 못했어. Firebase 설정을 확인해봐.");
         }
       );
     }
 
-    startRealtimeListener();
+    async function startApp() {
+      updateLoadingText("로그인 중...");
+
+      try {
+        await signInAnonymously(auth);
+      } catch (error) {
+        console.error(error);
+        updateLoadingText("로그인에 실패했어. Firebase Authentication 설정을 확인해봐.");
+        return;
+      }
+
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          startRealtimeListener();
+        }
+      });
+    }
+
+    startApp();
   </script>
 </body>
 </html>
