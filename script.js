@@ -21,7 +21,7 @@ const PINS = {
 // ===== 상태 =====
 let selectedRole = null;
 let currentRole = localStorage.getItem("currentRole") || "";
-let couplequestions = [];
+let questions = [];
 let currentQuestionId = null;
 let currentQuestionData = null;
 
@@ -149,7 +149,7 @@ function setupQuestionAdd() {
     }
 
     try {
-      await addDoc(collection(db, "questions"), {
+      await addDoc(collection(db, "couplequestions"), {
         question,
         createdAt: serverTimestamp(),
         minjuAnswer: "",
@@ -169,7 +169,7 @@ function setupQuestionAdd() {
 
 // ===== 질문 실시간 불러오기 =====
 function listenQuestions() {
-  const q = query(collection(db, "questions"), orderBy("createdAt", "desc"));
+  const q = query(collection(db, "couplequestions"), orderBy("createdAt", "desc"));
 
   onSnapshot(q, snapshot => {
     questions = snapshot.docs.map(docSnap => ({
@@ -316,7 +316,7 @@ async function saveAnswer() {
   }
 
   try {
-    await updateDoc(doc(db, "questions", currentQuestionId), updateData);
+    await updateDoc(doc(db, "couplequestions", currentQuestionId), updateData);
     alert("답변 저장 완료");
     closeDetailModal();
   } catch (error) {
