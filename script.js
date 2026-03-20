@@ -75,10 +75,10 @@ async function init() {
     setupQuestionAdd();
     setupDetailModal();
     listenQuestions();
-  } catch (error) {
-    console.error(error);
-    alert("Firebase 연결 또는 익명 로그인에 실패했어.");
-  }
+ } catch (error) {
+  console.error("init error:", error);
+  alert(`실패!\ncode: ${error.code}\nmessage: ${error.message}`);
+}
 }
 
 // ===== 역할 선택 =====
