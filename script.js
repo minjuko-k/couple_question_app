@@ -21,7 +21,7 @@ const PINS = {
 // ===== 상태 =====
 let selectedRole = null;
 let currentRole = localStorage.getItem("currentRole") || "";
-let questions = [];
+let couplequestions = [];
 let currentQuestionId = null;
 let currentQuestionData = null;
 
